@@ -1,18 +1,26 @@
-# `@hyperledger/cactus-plugin-ledger-connector-iroha`
+# `@hyperledger/cactus-plugin-ledger-connector-iroha` <!-- omit in toc -->
 
 This plugin provides `Cactus` a way to interact with Iroha networks. Using this we can perform:
 * Run various Iroha leger commands and queries.
 * Build and sign transactions using any arbitrary credential.
-## Summary
 
-  - [Getting Started](#getting-started)
+## Table of Contents
+
+- [Table of Contents](#table-of-contents)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Compiling](#compiling)
   - [Architecture](#architecture)
+    - [run-transaction-endpoint](#run-transaction-endpoint)
   - [Usage](#usage)
-  - [Runing the tests](#running-the-tests)
-  - [Built With](#built-with)
-  - [Contributing](#contributing)
-  - [License](#license)
-  - [Acknowledgments](#acknowledgments)
+  - [Building/running the container image locally](#buildingrunning-the-container-image-locally)
+    - [Running the container](#running-the-container)
+    - [Testing API calls with the container](#testing-api-calls-with-the-container)
+    - [Testing Local Changes Within The Container](#testing-local-changes-within-the-container)
+- [Running the tests](#running-the-tests)
+- [Contributing](#contributing)
+- [License](#license)
+- [Acknowledgments](#acknowledgments)
 
 ## Getting Started
 
@@ -211,6 +219,27 @@ The above should produce a response that looks similar to this:
         }
     }
 }
+```
+
+#### Testing Local Changes Within The Container
+
+```sh
+DOCKER_BUILDKIT=1 docker build -f ./packages/cactus-plugin-ledger-connector-iroha/Dockerfile.local . -t cplcb
+```
+
+```sh
+docker run \
+  --rm \
+  --mount type=bind,source="$(pwd)"/packages/cactus-plugin-ledger-connector-iroha/,target=/tmp/org/hyperledger/cactus/plugins/ \
+  --mount type=bind,source="$(pwd)"/node_modules/,target=/tmp/org/hyperledger/cactus/some-unique-iroha-connector-instance-id/ \
+  --publish 3000:3000 \
+  --publish 4000:4000 \
+  --publish 5000:5000 \
+  --env AUTHORIZATION_PROTOCOL='NONE' \
+  --env AUTHORIZATION_CONFIG_JSON='{}' \
+  --env GRPC_TLS_ENABLED=false \
+  --env PLUGINS='[{"packageName": "@hyperledger/cactus-plugin-ledger-connector-iroha", "type": "org.hyperledger.cactus.plugin_import_type.LOCAL", "action": "org.hyperledger.cactus.plugin_import_action.INSTANTIATE",  "options": {"rpcApiHttpHost": "http://localhost:8545/", "rpcToriiPortHost": "http://localhost:50051", "instanceId": "some-unique-iroha-connector-instance-id"}}]' \
+  ghcr.io/hyperledger/cactus-cmd-api-server:2022-06-02-a69a957
 ```
 
 ## Running the tests
